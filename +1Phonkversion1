@@ -1,0 +1,206 @@
+
+-- Position Manager: 50 Speicherplätze
+-- LocalScript in StarterPlayer > StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local savedPositions = {}
+local MAX_SLOTS = 50
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "PositionManager"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 420, 0, 440)
+main.Position = UDim2.new(0, 20, 0.5, -220)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+main.BorderSizePixel = 0
+main.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = main
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -50, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "Position Manager (50 Slots)"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 19
+title.Font = Enum.Font.GothamBold
+title.Parent = main
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0, 32, 0, 32)
+close.Position = UDim2.new(1, -38, 0, 8)
+close.Text = "X"
+close.TextColor3 = Color3.new(1, 1, 1)
+close.BackgroundColor3 = Color3.fromRGB(180, 55, 55)
+close.Parent = main
+
+close.MouseButton1Click:Connect(function()
+    main.Visible = false
+end)
+
+local nameBox = Instance.new("TextBox")
+nameBox.Size = UDim2.new(1, -20, 0, 35)
+nameBox.Position = UDim2.new(0, 10, 0, 50)
+nameBox.PlaceholderText = "Name der Position eingeben..."
+nameBox.Text = ""
+nameBox.TextSize = 14
+nameBox.TextColor3 = Color3.new(1, 1, 1)
+nameBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
+nameBox.BackgroundColor3 = Color3.fromRGB(48, 48, 60)
+nameBox.ClearTextOnFocus = false
+nameBox.Parent = main
+
+local saveButton = Instance.new("TextButton")
+saveButton.Size = UDim2.new(1, -20, 0, 35)
+saveButton.Position = UDim2.new(0, 10, 0, 92)
+saveButton.Text = "＋ Aktuelle Position speichern"
+saveButton.TextSize = 15
+saveButton.TextColor3 = Color3.new(1, 1, 1)
+saveButton.BackgroundColor3 = Color3.fromRGB(45, 135, 90)
+saveButton.Parent = main
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -20, 1, -145)
+scroll.Position = UDim2.new(0, 10, 0, 135)
+scroll.BackgroundColor3 = Color3.fromRGB(23, 23, 30)
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 7
+scroll.CanvasSize = UDim2.new(0, 0, 0, MAX_SLOTS * 55)
+scroll.Parent = main
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 5)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = scroll
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -20, 0, 20)
+status.Position = UDim2.new(0, 10, 1, -23)
+status.BackgroundTransparency = 1
+status.Text = "Bereit"
+status.TextColor3 = Color3.fromRGB(180, 220, 180)
+status.TextSize = 12
+status.Parent = main
+
+local function getRoot()
+    local character = player.Character
+    return character and character:FindFirstChild("HumanoidRootPart")
+end
+
+local function refresh()
+    for _, child in ipairs(scroll:GetChildren()) do
+        if child:IsA("Frame") then
+            child:Destroy()
+        end
+    end
+
+    for i = 1, MAX_SLOTS do
+        local data = savedPositions[i]
+
+        local row = Instance.new("Frame")
+        row.Size = UDim2.new(1, -8, 0, 50)
+        row.BackgroundColor3 = Color3.fromRGB(42, 42, 53)
+        row.LayoutOrder = i
+        row.BorderSizePixel = 0
+        row.Parent = scroll
+
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(0.47, 0, 1, 0)
+        label.Position = UDim2.new(0, 5, 0, 0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.TextSize = 12
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextWrapped = true
+
+        if data then
+            label.Text = i .. ". " .. data.name
+                .. "\nX:" .. math.floor(data.position.X * 100) / 100
+                .. " Y:" .. math.floor(data.position.Y * 100) / 100
+                .. " Z:" .. math.floor(data.position.Z * 100) / 100
+        else
+            label.Text = i .. ". (Leer)"
+        end
+        label.Parent = row
+
+        local teleport = Instance.new("TextButton")
+        teleport.Size = UDim2.new(0.25, -3, 0, 34)
+        teleport.Position = UDim2.new(0.49, 0, 0.5, -17)
+        teleport.Text = "Teleport"
+        teleport.TextSize = 12
+        teleport.TextColor3 = Color3.new(1, 1, 1)
+        teleport.BackgroundColor3 = Color3.fromRGB(55, 110, 190)
+        teleport.Parent = row
+        teleport.Visible = data ~= nil
+
+        teleport.MouseButton1Click:Connect(function()
+            local root = getRoot()
+            if root and savedPositions[i] then
+                root.CFrame = savedPositions[i].cframe
+                status.Text = "Teleportiert zu: " .. savedPositions[i].name
+            end
+        end)
+
+        local delete = Instance.new("TextButton")
+        delete.Size = UDim2.new(0.20, -3, 0, 34)
+        delete.Position = UDim2.new(0.77, 0, 0.5, -17)
+        delete.Text = "Löschen"
+        delete.TextSize = 11
+        delete.TextColor3 = Color3.new(1, 1, 1)
+        delete.BackgroundColor3 = Color3.fromRGB(170, 55, 55)
+        delete.Parent = row
+        delete.Visible = data ~= nil
+
+        delete.MouseButton1Click:Connect(function()
+            savedPositions[i] = nil
+            status.Text = "Slot " .. i .. " gelöscht"
+            refresh()
+        end)
+    end
+end
+
+saveButton.MouseButton1Click:Connect(function()
+    local root = getRoot()
+    if not root then
+        status.Text = "Charakter nicht gefunden!"
+        return
+    end
+
+    local slot
+    for i = 1, MAX_SLOTS do
+        if not savedPositions[i] then
+            slot = i
+            break
+        end
+    end
+
+    if not slot then
+        status.Text = "Alle 50 Slots sind belegt!"
+        return
+    end
+
+    local positionName = nameBox.Text
+    if positionName == "" then
+        positionName = "Position " .. slot
+    end
+
+    savedPositions[slot] = {
+        name = positionName,
+        position = root.Position,
+        cframe = root.CFrame
+    }
+
+    nameBox.Text = ""
+    status.Text = "Position in Slot " .. slot .. " gespeichert!"
+    refresh()
+end)
+
+refresh()

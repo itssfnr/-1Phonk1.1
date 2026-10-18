@@ -1,12 +1,13 @@
 
--- Position Manager: 50 Speicherplätze
--- LocalScript in StarterPlayer > StarterPlayerScripts
+-- POSITION MANAGER V2
+-- 50 Slots | Speichern | Copy | Teleport | Löschen
+-- Installation: StarterPlayer > StarterPlayerScripts > LocalScript
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local savedPositions = {}
 local MAX_SLOTS = 50
+local savedPositions = {}
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "PositionManager"
@@ -14,85 +15,176 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 420, 0, 440)
-main.Position = UDim2.new(0, 20, 0.5, -220)
-main.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+main.Size = UDim2.fromOffset(590, 500)
+main.Position = UDim2.new(0, 20, 0.5, -250)
+main.BackgroundColor3 = Color3.fromRGB(25, 27, 35)
 main.BorderSizePixel = 0
 main.Parent = gui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = main
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -50, 0, 40)
-title.Position = UDim2.new(0, 10, 0, 5)
+title.Size = UDim2.new(1, -60, 0, 42)
+title.Position = UDim2.fromOffset(12, 5)
 title.BackgroundTransparency = 1
-title.Text = "Position Manager (50 Slots)"
+title.Text = "POSITION MANAGER  |  50 SLOTS"
 title.TextColor3 = Color3.new(1, 1, 1)
-title.TextSize = 19
 title.Font = Enum.Font.GothamBold
+title.TextSize = 19
+title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = main
 
 local close = Instance.new("TextButton")
-close.Size = UDim2.new(0, 32, 0, 32)
-close.Position = UDim2.new(1, -38, 0, 8)
+close.Size = UDim2.fromOffset(35, 35)
+close.Position = UDim2.new(1, -43, 0, 8)
 close.Text = "X"
+close.Font = Enum.Font.GothamBold
+close.TextSize = 16
 close.TextColor3 = Color3.new(1, 1, 1)
-close.BackgroundColor3 = Color3.fromRGB(180, 55, 55)
+close.BackgroundColor3 = Color3.fromRGB(190, 55, 60)
 close.Parent = main
+Instance.new("UICorner", close)
 
 close.MouseButton1Click:Connect(function()
     main.Visible = false
 end)
 
 local nameBox = Instance.new("TextBox")
-nameBox.Size = UDim2.new(1, -20, 0, 35)
-nameBox.Position = UDim2.new(0, 10, 0, 50)
-nameBox.PlaceholderText = "Name der Position eingeben..."
+nameBox.Size = UDim2.new(1, -24, 0, 36)
+nameBox.Position = UDim2.fromOffset(12, 53)
+nameBox.PlaceholderText = "Name der Position..."
 nameBox.Text = ""
-nameBox.TextSize = 14
-nameBox.TextColor3 = Color3.new(1, 1, 1)
-nameBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
-nameBox.BackgroundColor3 = Color3.fromRGB(48, 48, 60)
 nameBox.ClearTextOnFocus = false
+nameBox.TextColor3 = Color3.new(1, 1, 1)
+nameBox.PlaceholderColor3 = Color3.fromRGB(160, 160, 170)
+nameBox.BackgroundColor3 = Color3.fromRGB(43, 46, 57)
+nameBox.Font = Enum.Font.Gotham
+nameBox.TextSize = 14
 nameBox.Parent = main
+Instance.new("UICorner", nameBox)
 
 local saveButton = Instance.new("TextButton")
-saveButton.Size = UDim2.new(1, -20, 0, 35)
-saveButton.Position = UDim2.new(0, 10, 0, 92)
-saveButton.Text = "＋ Aktuelle Position speichern"
-saveButton.TextSize = 15
+saveButton.Size = UDim2.new(1, -24, 0, 36)
+saveButton.Position = UDim2.fromOffset(12, 96)
+saveButton.Text = "+ SAVE CURRENT POSITION"
 saveButton.TextColor3 = Color3.new(1, 1, 1)
-saveButton.BackgroundColor3 = Color3.fromRGB(45, 135, 90)
+saveButton.BackgroundColor3 = Color3.fromRGB(35, 145, 90)
+saveButton.Font = Enum.Font.GothamBold
+saveButton.TextSize = 14
 saveButton.Parent = main
+Instance.new("UICorner", saveButton)
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -24, 0, 24)
+status.Position = UDim2.new(0, 12, 1, -29)
+status.BackgroundTransparency = 1
+status.Text = "Ready"
+status.TextColor3 = Color3.fromRGB(140, 220, 160)
+status.TextSize = 12
+status.Font = Enum.Font.Gotham
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.Parent = main
 
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -20, 1, -145)
-scroll.Position = UDim2.new(0, 10, 0, 135)
-scroll.BackgroundColor3 = Color3.fromRGB(23, 23, 30)
+scroll.Size = UDim2.new(1, -24, 1, -180)
+scroll.Position = UDim2.fromOffset(12, 140)
+scroll.BackgroundColor3 = Color3.fromRGB(31, 33, 43)
 scroll.BorderSizePixel = 0
 scroll.ScrollBarThickness = 7
-scroll.CanvasSize = UDim2.new(0, 0, 0, MAX_SLOTS * 55)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 scroll.Parent = main
+Instance.new("UICorner", scroll)
 
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0, 5)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = scroll
 
-local status = Instance.new("TextLabel")
-status.Size = UDim2.new(1, -20, 0, 20)
-status.Position = UDim2.new(0, 10, 1, -23)
-status.BackgroundTransparency = 1
-status.Text = "Bereit"
-status.TextColor3 = Color3.fromRGB(180, 220, 180)
-status.TextSize = 12
-status.Parent = main
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, 5)
+padding.PaddingLeft = UDim.new(0, 5)
+padding.PaddingRight = UDim.new(0, 5)
+padding.Parent = scroll
 
 local function getRoot()
     local character = player.Character
     return character and character:FindFirstChild("HumanoidRootPart")
+end
+
+-- Clipboard in Roblox Studio is not available to normal LocalScripts.
+-- This fallback displays selectable text for manual copying.
+local function showCopyText(textToCopy)
+    local old = gui:FindFirstChild("CopyWindow")
+    if old then old:Destroy() end
+
+    local popup = Instance.new("Frame")
+    popup.Name = "CopyWindow"
+    popup.Size = UDim2.fromOffset(420, 210)
+    popup.Position = UDim2.new(0.5, -210, 0.5, -105)
+    popup.BackgroundColor3 = Color3.fromRGB(38, 40, 52)
+    popup.ZIndex = 5
+    popup.Parent = gui
+    Instance.new("UICorner", popup)
+
+    local heading = Instance.new("TextLabel")
+    heading.Size = UDim2.new(1, -50, 0, 35)
+    heading.Position = UDim2.fromOffset(10, 5)
+    heading.BackgroundTransparency = 1
+    heading.Text = "Copy position data"
+    heading.TextColor3 = Color3.new(1, 1, 1)
+    heading.Font = Enum.Font.GothamBold
+    heading.TextSize = 16
+    heading.ZIndex = 6
+    heading.Parent = popup
+
+    local exit = Instance.new("TextButton")
+    exit.Size = UDim2.fromOffset(30, 30)
+    exit.Position = UDim2.new(1, -36, 0, 5)
+    exit.Text = "X"
+    exit.TextColor3 = Color3.new(1, 1, 1)
+    exit.BackgroundColor3 = Color3.fromRGB(180, 55, 60)
+    exit.ZIndex = 6
+    exit.Parent = popup
+    exit.MouseButton1Click:Connect(function()
+        popup:Destroy()
+    end)
+
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(1, -20, 1, -55)
+    textBox.Position = UDim2.fromOffset(10, 42)
+    textBox.BackgroundColor3 = Color3.fromRGB(25, 27, 35)
+    textBox.TextColor3 = Color3.new(1, 1, 1)
+    textBox.TextSize = 13
+    textBox.Font = Enum.Font.Code
+    textBox.TextWrapped = false
+    textBox.TextXAlignment = Enum.TextXAlignment.Left
+    textBox.TextYAlignment = Enum.TextYAlignment.Top
+    textBox.ClearTextOnFocus = false
+    textBox.MultiLine = true
+    textBox.TextEditable = true
+    textBox.Text = textToCopy
+    textBox.ZIndex = 6
+    textBox.Parent = popup
+
+    textBox:CaptureFocus()
+    textBox.CursorPosition = 1
+    textBox.SelectionStart = 1
+    status.Text = "Text markieren und mit STRG+C kopieren"
+end
+
+local function makeButton(parent, text, color, x, width)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(width, -4, 0, 34)
+    button.Position = UDim2.new(x, 0, 0.5, -17)
+    button.Text = text
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 11
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundColor3 = color
+    button.Parent = parent
+    Instance.new("UICorner", button)
+    return button
 end
 
 local function refresh()
@@ -106,62 +198,74 @@ local function refresh()
         local data = savedPositions[i]
 
         local row = Instance.new("Frame")
-        row.Size = UDim2.new(1, -8, 0, 50)
-        row.BackgroundColor3 = Color3.fromRGB(42, 42, 53)
-        row.LayoutOrder = i
+        row.Size = UDim2.new(1, -4, 0, 54)
+        row.BackgroundColor3 = Color3.fromRGB(44, 47, 60)
         row.BorderSizePixel = 0
+        row.LayoutOrder = i
         row.Parent = scroll
+        Instance.new("UICorner", row)
 
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.47, 0, 1, 0)
-        label.Position = UDim2.new(0, 5, 0, 0)
+        label.Size = UDim2.new(0.40, -4, 1, -4)
+        label.Position = UDim2.fromOffset(7, 2)
         label.BackgroundTransparency = 1
         label.TextColor3 = Color3.new(1, 1, 1)
-        label.TextSize = 12
+        label.TextSize = 11
+        label.Font = Enum.Font.Gotham
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.TextWrapped = true
 
         if data then
-            label.Text = i .. ". " .. data.name
-                .. "\nX:" .. math.floor(data.position.X * 100) / 100
-                .. " Y:" .. math.floor(data.position.Y * 100) / 100
-                .. " Z:" .. math.floor(data.position.Z * 100) / 100
+            local p = data.position
+            label.Text = string.format(
+                "%02d. %s\nX: %.3f | Y: %.3f | Z: %.3f",
+                i, data.name, p.X, p.Y, p.Z
+            )
         else
-            label.Text = i .. ". (Leer)"
+            label.Text = string.format("%02d. (EMPTY)", i)
+            label.TextColor3 = Color3.fromRGB(150, 150, 160)
         end
         label.Parent = row
 
-        local teleport = Instance.new("TextButton")
-        teleport.Size = UDim2.new(0.25, -3, 0, 34)
-        teleport.Position = UDim2.new(0.49, 0, 0.5, -17)
-        teleport.Text = "Teleport"
-        teleport.TextSize = 12
-        teleport.TextColor3 = Color3.new(1, 1, 1)
-        teleport.BackgroundColor3 = Color3.fromRGB(55, 110, 190)
-        teleport.Parent = row
+        local teleport = makeButton(
+            row, "GO", Color3.fromRGB(50, 105, 190),
+            0.41, 0.17
+        )
         teleport.Visible = data ~= nil
-
         teleport.MouseButton1Click:Connect(function()
+            local saved = savedPositions[i]
             local root = getRoot()
-            if root and savedPositions[i] then
-                root.CFrame = savedPositions[i].cframe
-                status.Text = "Teleportiert zu: " .. savedPositions[i].name
+            if saved and root then
+                root.CFrame = saved.cframe
+                status.Text = "Teleported to " .. saved.name
             end
         end)
 
-        local delete = Instance.new("TextButton")
-        delete.Size = UDim2.new(0.20, -3, 0, 34)
-        delete.Position = UDim2.new(0.77, 0, 0.5, -17)
-        delete.Text = "Löschen"
-        delete.TextSize = 11
-        delete.TextColor3 = Color3.new(1, 1, 1)
-        delete.BackgroundColor3 = Color3.fromRGB(170, 55, 55)
-        delete.Parent = row
-        delete.Visible = data ~= nil
+        local copy = makeButton(
+            row, "COPY", Color3.fromRGB(35, 145, 90),
+            0.58, 0.19
+        )
+        copy.Visible = data ~= nil
+        copy.MouseButton1Click:Connect(function()
+            local saved = savedPositions[i]
+            if not saved then return end
 
+            local p = saved.position
+            local textToCopy = string.format(
+                "Name: %s\nX: %.6f\nY: %.6f\nZ: %.6f\nCFrame: %s",
+                saved.name, p.X, p.Y, p.Z, tostring(saved.cframe)
+            )
+            showCopyText(textToCopy)
+        end)
+
+        local delete = makeButton(
+            row, "DEL", Color3.fromRGB(175, 55, 60),
+            0.77, 0.21
+        )
+        delete.Visible = data ~= nil
         delete.MouseButton1Click:Connect(function()
             savedPositions[i] = nil
-            status.Text = "Slot " .. i .. " gelöscht"
+            status.Text = "Slot " .. i .. " deleted"
             refresh()
         end)
     end
@@ -170,7 +274,7 @@ end
 saveButton.MouseButton1Click:Connect(function()
     local root = getRoot()
     if not root then
-        status.Text = "Charakter nicht gefunden!"
+        status.Text = "Character not found!"
         return
     end
 
@@ -183,12 +287,12 @@ saveButton.MouseButton1Click:Connect(function()
     end
 
     if not slot then
-        status.Text = "Alle 50 Slots sind belegt!"
+        status.Text = "All 50 slots are full!"
         return
     end
 
     local positionName = nameBox.Text
-    if positionName == "" then
+    if positionName:gsub("%s", "") == "" then
         positionName = "Position " .. slot
     end
 
@@ -199,7 +303,7 @@ saveButton.MouseButton1Click:Connect(function()
     }
 
     nameBox.Text = ""
-    status.Text = "Position in Slot " .. slot .. " gespeichert!"
+    status.Text = "Saved in slot " .. slot
     refresh()
 end)
 
